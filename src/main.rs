@@ -29,11 +29,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let result = &res["result"];
 
         let balance = result["balance"].as_u64().unwrap_or(0);
-        let unlocked = result["unlocked_balance"].as_u64().unwrap_or(0);
+       //let unlocked = result["unlocked_balance"].as_u64().unwrap_or(0);
+        let unlocked = result["balance"].as_u64().unwrap_or(0);
 
         println!("Balance: {balance} | Unlocked: {unlocked}");
 
-        if last_unlocked_balance != unlocked {
+        if last_unlocked_balance == unlocked {
+            println!("RTC sent same value as last, not sending it to webhook so as not to send duplicates")
+        } else {
             last_unlocked_balance = unlocked;
             // -------------------------
             // 2. Send to webhook
@@ -55,6 +58,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // -------------------------
         // 3. Wait 10 minutes
         // -------------------------
-        tokio::time::sleep(Duration::from_secs(600)).await;
+        tokio::time::sleep(Duration::from_secs(60)).await;
     }
 }
