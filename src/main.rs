@@ -33,27 +33,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         println!("Balance: {balance} | Unlocked: {unlocked}");
 
-       if last_unlocked_balance != unlocked {
-         // -------------------------
-        // 2. Send to webhook
-        // -------------------------
-        let form = [
-            ("token", "123"),
-            ("action", "set_website_fund_xmr"),
-            ("amount", &unlocked.to_string()),
-        ];
+        if last_unlocked_balance != unlocked {
+            last_unlocked_balance = unlocked;
+            // -------------------------
+            // 2. Send to webhook
+            // -------------------------
+            let form = [
+                ("token", "123"),
+                ("action", "set_website_fund_xmr"),
+                ("amount", &unlocked.to_string()),
+            ];
 
-        let resp = client
-            .post(WEBHOOK_URL)
-            .form(&form)
-            .send()
-            .await?;
+            let resp = client.post(WEBHOOK_URL).form(&form).send().await?;
 
-        let status = resp.status();
-        let body = resp.text().await.unwrap_or_default();
+            let status = resp.status();
+            let body = resp.text().await.unwrap_or_default();
 
-        println!("Webhook response: {status} - {body}");
-    }
+            println!("Webhook response: {status} - {body}");
+        }
 
         // -------------------------
         // 3. Wait 10 minutes
