@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Env vars: RPC_URL={}\n WEBHOOK_URL={}\n WEBHOOK_TOKEN={}\n", rpc_url, webhook_url, webhook_token);
     
     let client = reqwest::Client::new();
-    let mut last_unlocked_balance: u64 = 0;
+    let mut last_unlocked_balance: u64 = 999999999999;
     loop {
         // -------------------------
         // 1. Get wallet balance
@@ -64,7 +64,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ("token", webhook_token.as_str()),
                 ("action", webhook_action.as_str()),
                 ("amount", &unlocked.to_string()),
-            ];
+            ]; 
 
             let resp = client.post(webhook_url.clone()).form(&form).send().await?;
 
