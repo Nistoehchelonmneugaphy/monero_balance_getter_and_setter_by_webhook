@@ -1,3 +1,16 @@
+[profile.release]
+# Maximum optimization level for speed
+opt-level = 3
+
+# Full Link Time Optimization (LTO) across all crates
+lto = "fat"
+
+# Single codegen unit allows for more global optimizations
+codegen-units = 1
+
+# hmm... do I want this?
+overflow-checks = true
+
 [package]
 name = "monero_balance_setter"
 version = "0.1.0"
