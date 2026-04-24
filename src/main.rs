@@ -4,18 +4,26 @@ use std::{time::Duration};
 // const RPC_URL: &str = "http://127.0.0.1:38089/json_rpc";
 // const WEBHOOK_URL: &str = "http://localhost:5555/webhook_and_api";
 
+const VERSION: &str = "0.0.0.0.1";
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("version: {}", VERSION);
     dotenvy::dotenv().ok();
        let rpc_url = std::env::var("RPC_URL")
         .expect("RPC_URL must be set");
 
     let webhook_url = std::env::var("WEBHOOK_URL")
         .expect("WEBHOOK_URL must be set");
+
+    let webhook_action = std::env::var("WEBHOOK_ACTION")
+        .expect("WEBHOOK_ACTION must be set");
     let webhook_token = std::env::var("WEBHOOK_TOKEN")
         .expect("WEBHOOK_TOKEN must be set");
+    let webhook_send_interval_seconds = std::env::var("WEBHOOK_SEND_INTERVAL_SECONDS")
+        .expect("WEBHOOK_SEND_INTERVAL_SECONDS must be set").parse::<u64>().expect("Expected WEBHOOK_SEND_INTERVAL_SECONDS to be parsable into u64");
 
-    println!("Env vars: RPC_URL={} WEBHOOK_URL={} WEBHOOK_TOKEN={}", rpc_url, webhook_url, webhook_token);
+    println!("Env vars: RPC_URL={}\n WEBHOOK_URL={}\n WEBHOOK_TOKEN={}\n", rpc_url, webhook_url, webhook_token);
     
     let client = reqwest::Client::new();
     let mut last_unlocked_balance: u64 = 0;
@@ -54,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // -------------------------
             let form = [
                 ("token", webhook_token.as_str()),
-                ("action", "set_website_fund_xmr"),
+                ("action", webhook_action.as_str()),
                 ("amount", &unlocked.to_string()),
             ];
 
@@ -69,6 +77,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // -------------------------
         // 3. Wait 10 minutes
         // -------------------------
-        tokio::time::sleep(Duration::from_secs(60)).await;
+        tokio::time::sleep(Duration::from_secs(webhook_send_interval_seconds)).await;
     }
 }
