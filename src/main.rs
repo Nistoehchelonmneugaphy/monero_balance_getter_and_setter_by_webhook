@@ -4,7 +4,7 @@ use std::{time::Duration};
 // const RPC_URL: &str = "http://127.0.0.1:38089/json_rpc";
 // const WEBHOOK_URL: &str = "http://localhost:5555/webhook_and_api";
 
-const VERSION: &str = "0.0.0.0.1";
+const VERSION: &str = "0.0.0.0.2";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
