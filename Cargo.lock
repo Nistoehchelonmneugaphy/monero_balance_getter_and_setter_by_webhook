@@ -857,7 +857,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "monero_balance_setter"
+name = "monero_balance_getter"
 version = "0.1.0"
 dependencies = [
  "config",
