@@ -21,38 +21,47 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         webhook_send_interval_seconds,
         cf_bypass_header_name,
         cf_bypass_token,
+        test_webhook_only,
     } = app_config;
-    let webhook_full_url = format!("{webhook_target_domain}/{webhook_secret_path_prefix}/{webhook_path}/{webhook_action}");
-    println!(
-        "RPC_URL={rpc_url}\nWEBHOOK_FULL_URL={webhook_full_url}\n",
+    let webhook_full_url = format!(
+        "{webhook_target_domain}/{webhook_secret_path_prefix}/{webhook_path}/{webhook_action}"
     );
+    println!("RPC_URL={rpc_url}\nWEBHOOK_FULL_URL={webhook_full_url}\n",);
 
     let client = reqwest::Client::new();
     let mut last_unlocked_balance: u64 = 999999999999;
     loop {
-        // -------------------------
-        // 1. Get wallet balance
-        // -------------------------
-        let payload = serde_json::json!({
-            "jsonrpc": "2.0",
-            "id": "0",
-            "method": "get_balance"
-        });
+        let (balance, unlocked) = if test_webhook_only {
+            println!(
+                "test_webhook_only is true, not calling rpc, just generated random balance and unlocked in order to test if webhook_set works as intended"
+            );
+            let arbitrary_test_val = 3423423432;
+            (arbitrary_test_val, arbitrary_test_val)
+        } else {
+            // -------------------------
+            // 1. Get wallet balance
+            // -------------------------
+            let payload = serde_json::json!({
+                "jsonrpc": "2.0",
+                "id": "0",
+                "method": "get_balance"
+            });
 
-        let res: Value = client
-            .post(rpc_url.clone())
-            .json(&payload)
-            .send()
-            .await?
-            .json()
-            .await?;
+            let res: Value = client
+                .post(rpc_url.clone())
+                .json(&payload)
+                .send()
+                .await?
+                .json()
+                .await?;
 
-        let result = &res["result"];
+            let result = &res["result"];
 
-        let balance = result["balance"].as_u64().unwrap_or(0);
-        //let unlocked = result["unlocked_balance"].as_u64().unwrap_or(0);
-        let unlocked = result["balance"].as_u64().unwrap_or(0);
-
+            let balance = result["balance"].as_u64().unwrap_or(0);
+            //let unlocked = result["unlocked_balance"].as_u64().unwrap_or(0);
+            let unlocked = result["balance"].as_u64().unwrap_or(0);
+            (balance, unlocked)
+        };
         println!("Balance: {balance} | Unlocked: {unlocked}");
 
         if last_unlocked_balance == unlocked {
@@ -101,6 +110,7 @@ struct AppConfig {
     webhook_send_interval_seconds: u64,
     cf_bypass_header_name: String,
     cf_bypass_token: String,
+    test_webhook_only: bool,
 }
 
 fn read_config(config_file_path: PathBuf) -> AppConfig {
