@@ -13,16 +13,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app_config = read_config(PathBuf::from(".env"));
     let AppConfig {
         rpc_url,
-        webhook_url,
+        webhook_target_domain,
+        webhook_secret_path_prefix,
+        webhook_path,
         webhook_action,
         webhook_token,
         webhook_send_interval_seconds,
         cf_bypass_header_name,
         cf_bypass_token,
     } = app_config;
+    let webhook_full_url = format!("{webhook_target_domain}/{webhook_secret_path_prefix}/{webhook_path}/{webhook_action}");
     println!(
-        "RPC_URL={}\n WEBHOOK_URL={}\n WEBHOOK_ACTION={}\n",
-        rpc_url, webhook_url, webhook_action
+        "RPC_URL={rpc_url}\nWEBHOOK_FULL_URL={webhook_full_url}\n",
     );
 
     let client = reqwest::Client::new();
@@ -69,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             ];
 
             let resp = client
-                .post(webhook_url.clone())
+                .post(webhook_full_url.clone())
                 .header(cf_bypass_header_name.clone(), cf_bypass_token.clone())
                 .form(&form)
                 .send()
@@ -91,13 +93,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[derive(Debug, Clone, serde::Deserialize)]
 struct AppConfig {
     rpc_url: String,
-    webhook_url: String,
+    webhook_target_domain: String,
+    webhook_secret_path_prefix: String,
+    webhook_path: String,
     webhook_action: String,
     webhook_token: String,
     webhook_send_interval_seconds: u64,
     cf_bypass_header_name: String,
     cf_bypass_token: String,
-} 
+}
 
 fn read_config(config_file_path: PathBuf) -> AppConfig {
     dotenvy::from_path(config_file_path).ok();
