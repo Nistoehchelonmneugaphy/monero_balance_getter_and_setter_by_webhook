@@ -12,7 +12,7 @@ codegen-units = 1
 overflow-checks = true
 
 [package]
-name = "monero_balance_getter"
+name = "monero_balance_getter_and_setter_by_webhook"
 version = "0.1.0"
 edition = "2024"
 
